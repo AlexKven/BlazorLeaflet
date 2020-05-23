@@ -61,5 +61,23 @@ namespace BlazorLeaflet
 
         public static ValueTask<float> GetZoom(IJSRuntime jsRuntime, string mapId) =>
             jsRuntime.InvokeAsync<float>($"{_BaseObjectContainer}.getZoom", mapId);
+
+        private class _Bounds
+        {
+            public LatLng _southWest { get; set; }
+            public LatLng _northEast { get; set; }
+
+            public Bounds AsBounds() => new Bounds(_southWest, _northEast);
+        }
+
+        public static async Task<Bounds> GetBounds(IJSRuntime jsRuntime, string mapId)
+        {
+            return (await jsRuntime.InvokeAsync<_Bounds>($"{_BaseObjectContainer}.getBounds", mapId)).AsBounds();
+        }
+
+        public static async Task SetZoom(IJSRuntime jsRuntime, string mapId, float zoomLevel)
+        {
+            await jsRuntime.InvokeVoidAsync($"{_BaseObjectContainer}.setZoom", mapId, zoomLevel);
+        }
     }
 }
