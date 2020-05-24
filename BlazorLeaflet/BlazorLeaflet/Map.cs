@@ -81,7 +81,8 @@ namespace BlazorLeaflet
 
         public string Id { get; }
 
-        private ObservableCollection<Layer> _layers = new ObservableCollection<Layer>();
+        public ObservableCollection<Layer> Layers { get; }
+            = new ObservableCollection<Layer>();
 
         private readonly IJSRuntime _jsRuntime;
 
@@ -92,7 +93,7 @@ namespace BlazorLeaflet
             _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
             Id = StringHelper.GetRandomString(10);
 
-            _layers.CollectionChanged += OnLayersChanged;
+            Layers.CollectionChanged += OnLayersChanged;
         }
 
         private async void RunTaskInBackground(Func<Task> task)
@@ -104,6 +105,17 @@ namespace BlazorLeaflet
             catch (Exception) { }
         }
 
+        public void MapInitialized()
+        {
+            foreach (var layer in Layers)
+            {
+                if (layer == null)
+                    continue;
+                LeafletInterops.AddLayer(_jsRuntime, Id, layer);
+            }
+            RaiseOnInitialized();
+        }
+
         /// <summary>
         /// This method MUST be called only once by the Blazor component upon rendering, and never by the user.
         /// </summary>
@@ -113,63 +125,16 @@ namespace BlazorLeaflet
             OnInitialized?.Invoke();
         }
 
-        /// <summary>
-        /// Add a layer to the map.
-        /// </summary>
-        /// <param name="layer">The layer to be added.</param>
-        /// <exception cref="System.ArgumentNullException">Throws when the layer is null.</exception>
-        /// <exception cref="UninitializedMapException">Throws when the map has not been yet initialized.</exception>
-        public void AddLayer(Layer layer)
-        {
-            if (layer is null)
-            {
-                throw new ArgumentNullException(nameof(layer));
-            }
-
-            if (!_isInitialized)
-            {
-                throw new UninitializedMapException();
-            }
-
-            _layers.Add(layer);
-        }
-
-        /// <summary>
-        /// Remove a layer from the map.
-        /// </summary>
-        /// <param name="layer">The layer to be removed.</param>
-        /// <exception cref="System.ArgumentNullException">Throws when the layer is null.</exception>
-        /// <exception cref="UninitializedMapException">Throws when the map has not been yet initialized.</exception>
-        public void RemoveLayer(Layer layer)
-        {
-            if (layer is null)
-            {
-                throw new ArgumentNullException(nameof(layer));
-            }
-
-            if (!_isInitialized)
-            {
-                throw new UninitializedMapException();
-            }
-
-            _layers.Remove(layer);
-        }
-
-        /// <summary>
-        /// Get a read only collection of the current layers.
-        /// </summary>
-        /// <returns>A read only collection of layers.</returns>
-        public IReadOnlyCollection<Layer> GetLayers()
-        {
-            return _layers.ToList().AsReadOnly();
-        }
-
         private void OnLayersChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
+            if (!_isInitialized)
+                return;
             if (args.Action == NotifyCollectionChangedAction.Add)
             {
                 foreach (var item in args.NewItems)
                 {
+                    if (item == null)
+                        continue;
                     var layer = item as Layer;
                     LeafletInterops.AddLayer(_jsRuntime, Id, layer);
                 }
@@ -178,6 +143,8 @@ namespace BlazorLeaflet
             {
                 foreach (var item in args.OldItems)
                 {
+                    if (item == null)
+                        continue;
                     if (item is Layer layer)
                     {
                         LeafletInterops.RemoveLayer(_jsRuntime, Id, layer.Id);
