@@ -1,10 +1,11 @@
 ﻿using BlazorLeaflet.Models.Events;
 using BlazorLeaflet.Utils;
 using Microsoft.JSInterop;
+using System.ComponentModel;
 
 namespace BlazorLeaflet.Models
 {
-    public abstract class Layer
+    public abstract class Layer : INotifyPropertyChanged
     {
         /// <summary>
         /// Unique identifier used by the interoperability service on the client side to identify layers.
@@ -91,6 +92,10 @@ namespace BlazorLeaflet.Models
         {
             OnTooltipClose?.Invoke(this, eventArgs);
         }
+
+        protected virtual void OnPropertyChanged(string propertyName)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
     }

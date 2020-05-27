@@ -13,10 +13,19 @@ namespace BlazorLeaflet.Models
         /// </summary>
         public LatLng Position { get; set; }
 
+        private Icon _Icon;
         /// <summary>
         /// Icon instance to use for rendering the marker. See <see href="https://leafletjs.com/reference-1.5.0.html#icon">Icon documentation</see> for details on how to customize the marker icon. If not specified, a common instance of <see href="https://leafletjs.com/reference-1.5.0.html#icon-default">L.Icon.Default</see> is used.
         /// </summary>
-        public Icon Icon { get; set; }
+        public Icon Icon
+        {
+            get => _Icon;
+            set
+            {
+                _Icon = value;
+                OnPropertyChanged(nameof(Icon));
+            }
+        }
 
         /// <summary>
         /// Whether the marker can be tabbed to with a keyboard and clicked by pressing enter.

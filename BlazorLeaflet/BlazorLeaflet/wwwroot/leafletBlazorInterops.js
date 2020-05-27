@@ -77,6 +77,15 @@ window.leafletBlazor = {
         addLayer(mapId, mkr, marker.id);
         setTooltipAndPopupIfDefined(marker, mkr);
     },
+    setMarkerIcon: function (mapId, layerId, icon) {
+        const markers = layers[mapId].filter((layer) => layer.id === layerId);
+        if (markers.length === 1) {
+            var marker = markers[0];
+            if (marker.setIcon) {
+                marker.setIcon(createIcon(icon));
+            }
+        }
+    },
     addPolyline: function (mapId, polyline, objectReference) {
         const layer = L.polyline(shapeToLatLngArray(polyline.shape), createPolyline(polyline));
         addLayer(mapId, layer, polyline.id);
